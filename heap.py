@@ -1,6 +1,13 @@
 import time
 import random
-
+import tkinter as tk
+from tkinter import ttk
+import matplotlib.pyplot as plt
+# At the beginning of the script
+user_points = 0
+user_points = 0
+timer_running = False
+start_time = 0
 # Binary Heap Class
 class BinaryHeap:
     def __init__(self):
@@ -52,21 +59,102 @@ def perform_experiments(input_sizes, num_iterations):
 
     return results
 
+def create_ui(results):
+    root = tk.Tk()
+    root.geometry('720x400')
+    root.title("Binary Heap Insertion Time Experiment")
+    points_label = ttk.Label(root, text="Points: 0", font=("Arial", 14, "bold"))
+    points_label.pack(pady=10)
+    timer_label = ttk.Label(root, text="Elapsed Time: 0.00 seconds", font=("Arial", 14, "bold"))
+    timer_label.pack(pady=10)
+
+
+    # Function to handle button click
+    def on_button_click(size):
+        global user_points, timer_running, start_time
+
+        if not timer_running:
+            # Start the timer
+            timer_running = True
+            start_time = time.time()
+
+        average_insertion_time = measure_average_insertion_time(size, 1)
+        results[size] = average_insertion_time
+
+        # Stop the timer after each insertion
+        timer_running = False
+
+        # Calculate elapsed time and update the UI
+        elapsed_time = time.time() - start_time
+        timer_label.config(text=f"Elapsed Time: {elapsed_time:.2f} seconds")
+
+        # Award points to the user for successful insertion
+        user_points += 10
+
+        # Update the UI to show the user's points
+        points_label.config(text=f"Points: {user_points}")
+        update_table()
+
+
+    # Function to display the scatter plot
+    def display_scatter_plot():
+        input_sizes = list(results.keys())
+        average_times = list(results.values())
+
+        plt.figure(figsize=(8, 6))
+        plt.scatter(input_sizes, average_times, color='skyblue', marker='o')
+        plt.xlabel('Input Size')
+        plt.ylabel('Average Insertion Time (seconds)')
+        plt.title('Average Insertion Time for Different Input Sizes')
+        plt.grid(True)
+        plt.tight_layout()
+
+        # Display the scatter plot
+        plt.show()
+
+
+    # Create buttons for different input sizes
+    input_sizes = [100, 1000, 10000, 100000]
+    buttons_frame = ttk.Frame(root)
+    buttons_frame.pack()
+
+    for size in input_sizes:
+        button = ttk.Button(buttons_frame, text=f"Insert {size} elements", command=lambda size=size: on_button_click(size))
+        button.pack(side=tk.LEFT, padx=5, pady=5)
+
+    # Create a table to display results
+    frame = ttk.Frame(root)
+    frame.pack(fill=tk.BOTH, expand=True)
+
+    style = ttk.Style()
+    style.configure("Treeview", font=("Arial", 12))
+    style.configure("Treeview.Heading", font=("Arial", 12, "bold",))
+
+    table = ttk.Treeview(frame, columns=("Input Size", "Average Insertion Time (seconds)"), show="headings")
+    table.heading("Input Size", text="Input Size")
+    table.heading("Average Insertion Time (seconds)", text="Average Insertion Time (seconds)")
+
+    table.column("Input Size", anchor=tk.CENTER, width=120)
+    table.column("Average Insertion Time (seconds)", anchor=tk.CENTER, width=250)
+
+    table.pack(fill=tk.BOTH, expand=True)
+
+    # Function to update the table with results
+    def update_table():
+        table.delete(*table.get_children())
+        for size, average_insertion_time in results.items():
+            table.insert("", "end", values=(size, f"{average_insertion_time:.6f}"))
+
+    # Create a button to display the bar chart
+    show_scatter_plot_button = ttk.Button(root, text="Show Scatter Plot", command=display_scatter_plot)
+    show_scatter_plot_button.pack()
+
+    root.mainloop()
+
 # Main function
 def main():
-    input_sizes = [100, 1000, 10000, 100000]
-    num_iterations = 5
-
-    results = perform_experiments(input_sizes, num_iterations)
-
-    # Print the results
-    print("Average Insertion Time Results:")
-    for size in input_sizes:
-        print(f"\nInput Size: {size}")
-        print("Iteration\tAverage Insertion Time (seconds)")
-        for iteration in range(1, num_iterations + 1):
-            average_insertion_time = results[size]
-            print(f"{iteration}\t\t{average_insertion_time:.6f}")
+    results = {}
+    create_ui(results)
 
 if __name__ == "__main__":
     main()
