@@ -63,6 +63,7 @@ def create_ui(results):
     root = tk.Tk()
     root.geometry('720x400')
     root.title("Binary Heap Insertion Time Experiment")
+    root.configure(bg='lightblue') 
     points_label = ttk.Label(root, text="Points: 0", font=("Arial", 14, "bold"))
     points_label.pack(pady=10)
     timer_label = ttk.Label(root, text="Elapsed Time: 0.00 seconds", font=("Arial", 14, "bold"))
@@ -118,8 +119,17 @@ def create_ui(results):
     buttons_frame = ttk.Frame(root)
     buttons_frame.pack()
 
+    style = ttk.Style()
+    style.configure("W.TButton", foreground="black", font=("Arial", 12, "bold"))
+
+
     for size in input_sizes:
-        button = ttk.Button(buttons_frame, text=f"Insert {size} elements", command=lambda size=size: on_button_click(size))
+        # Set the background color for each button
+        bg_color = "green" if size == 100 else "blue" if size == 1000 else "orange"  # Choose your preferred colors
+        style.map('TButton', foreground = [('active', '!disabled', 'green')],
+                     background = [('active', 'black')])
+
+        button = ttk.Button(buttons_frame, text=f"Insert {size} elements", style="W.TButton", command=lambda size=size: on_button_click(size))
         button.pack(side=tk.LEFT, padx=5, pady=5)
 
     # Create a table to display results
@@ -145,9 +155,11 @@ def create_ui(results):
         for size, average_insertion_time in results.items():
             table.insert("", "end", values=(size, f"{average_insertion_time:.6f}"))
 
-    # Create a button to display the bar chart
+    # Create a button to display the Show Scatter Plot
     show_scatter_plot_button = ttk.Button(root, text="Show Scatter Plot", command=display_scatter_plot)
     show_scatter_plot_button.pack()
+    show_scatter_plot_button.configure(style="W.TButton")  # Set the button style
+
 
     root.mainloop()
 
